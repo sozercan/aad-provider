@@ -1,0 +1,9 @@
+apiVersion: externaldata.gatekeeper.sh/v1alpha1
+kind: Provider
+metadata:
+  name: aad-provider
+spec:
+  proxyURL: http://aad-provider.default:8090/mutate
+  timeout: 10
+  failurePolicy: fail
+  maxRetry: 5

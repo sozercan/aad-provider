@@ -1,0 +1,17 @@
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: AssignMetadata
+metadata:
+  name: mutate-labels
+spec:
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: [""]
+      kinds: ["ConfigMap"]
+  location: "metadata.labels.owner"
+  parameters:
+    assign:
+      value: "testUser"
+    externalData:
+      provider: azure-ad
+      dataSource: username

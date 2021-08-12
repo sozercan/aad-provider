@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aad-provider
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: aad-provider
+  template:
+    metadata:
+      labels:
+        run: aad-provider
+    spec:
+      containers:
+      - image: sozercan/aad-provider:latest
+        imagePullPolicy: Always
+        name: aad-provider
+        ports:
+        - containerPort: 8090
+          protocol: TCP
+      restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/os: linux
