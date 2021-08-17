@@ -13,12 +13,28 @@ spec:
         run: aad-provider
     spec:
       containers:
-      - image: sozercan/aad-provider:latest
-        imagePullPolicy: Always
-        name: aad-provider
-        ports:
-        - containerPort: 8090
-          protocol: TCP
+        - image: sozercan/aad-provider:latest
+          imagePullPolicy: Always
+          name: aad-provider
+          ports:
+            - containerPort: 8090
+              protocol: TCP
+          env:
+            - name: AZURE_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aad-provider-secret
+                  key: tenantID
+            - name: AZURE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aad-provider-secret
+                  key: clientID
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: aad-provider-secret
+                  key: clientSecret
       restartPolicy: Always
       nodeSelector:
         kubernetes.io/os: linux

@@ -1,22 +1,25 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
+	"github.com/open-networks/go-msgraph"
 	"go.uber.org/zap"
-
-	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
 var log logr.Logger
+
+const (
+	timeout      = 3 * time.Second
+	providerName = "aad-provider"
+)
 
 type ProviderCacheKey struct {
 	ProviderName string `json:"providerName,omitempty"`
@@ -60,20 +63,28 @@ func mutate(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1000)
-	defer cancel()
+	input = make(map[ProviderCacheKey]string)
 
-	azureSubjects, err := NewAzureSubjectsClient()
+	graphClient, err := msgraph.NewGraphClient(
+		os.Getenv("AZURE_TENANT_ID"),
+		os.Getenv("AZURE_CLIENT_ID"),
+		os.Getenv("AZURE_CLIENT_SECRET"))
 	if err != nil {
-		log.Error(err, "unable to create subjects client")
+		log.Error(err, "unable to create graph client")
+		return
 	}
 
 	for i := range input {
-		name, err := azureSubjects.Subjects(ctx, i.OutboundData)
-		if err != nil {
-			input[i] = ""
+		if i.ProviderName == providerName {
+			log.Info("mutate", "OutboundData", i.OutboundData)
+			user, err := graphClient.GetUser(i.OutboundData)
+			log.Info("mutate", "name", user)
+			if err != nil {
+				log.Error(err, "unable to get user")
+				input[i] = i.OutboundData
+			}
+			input[i] = strings.ReplaceAll(user.DisplayName, " ", "_")
 		}
-		input[i] = name
 	}
 
 	out, err := json.Marshal(input)
@@ -86,36 +97,4 @@ func mutate(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, string(out))
-}
-
-// AzureSubjects is a client that connects to Azure to get a users ObjectID
-type AzureSubjects struct {
-	client graphrbac.UsersClient
-}
-
-// NewAzureSubjectsClient creates a new client to get azure users
-func NewAzureSubjectsClient() (*AzureSubjects, error) {
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
-	if err != nil {
-		return nil, fmt.Errorf("new authorizer: %w", err)
-	}
-
-	graphClient := graphrbac.NewUsersClient(os.Getenv("AZURE_TENANT_ID"))
-	graphClient.Authorizer = authorizer
-
-	azureSubjects := AzureSubjects{
-		client: graphClient,
-	}
-
-	return &azureSubjects, nil
-}
-
-// Subjects gets the ObjectIDs from a list of given emails or user principal names
-func (a *AzureSubjects) Subjects(ctx context.Context, user string) (string, error) {
-	userDetails, err := a.client.Get(ctx, user)
-	if err != nil {
-		return "", fmt.Errorf("get user: %w", err)
-	}
-
-	return *userDetails.DisplayName, nil
 }

@@ -10,8 +10,8 @@ spec:
       kinds: ["ConfigMap"]
   location: "metadata.labels.owner"
   parameters:
-    assign:
-      value: "testUser"
     externalData:
-      provider: azure-ad
+      provider: aad-provider
       dataSource: username
+    assign:
+      value: "unknown"

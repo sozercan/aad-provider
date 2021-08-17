@@ -1,4 +1,4 @@
-# AAD provider
+# Azure Active Directory (AAD) provider
 
 - Deploy Gatekeeper with external data enabled
 

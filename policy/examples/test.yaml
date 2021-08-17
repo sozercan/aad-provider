@@ -1,20 +1,4 @@
-
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: test-deployment
-  labels:
-    app: test-deployment
-spec:
-  replicas: 0
-  selector:
-    matchLabels:
-      app: test-deployment
-  template:
-    metadata:
-      labels:
-        app: test-deployment
-    spec:
-      containers:
-      - name: static
-        image: gcr.io/distroless/static:nonroot
+  name: test-configmap
