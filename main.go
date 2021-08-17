@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -63,8 +64,6 @@ func mutate(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	input = make(map[ProviderCacheKey]string)
-
 	graphClient, err := msgraph.NewGraphClient(
 		os.Getenv("AZURE_TENANT_ID"),
 		os.Getenv("AZURE_CLIENT_ID"),
@@ -74,10 +73,14 @@ func mutate(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	opts := msgraph.GetWithContext(ctx)
+
 	for i := range input {
 		if i.ProviderName == providerName {
 			log.Info("mutate", "OutboundData", i.OutboundData)
-			user, err := graphClient.GetUser(i.OutboundData)
+			user, err := graphClient.GetUser(i.OutboundData, opts)
 			log.Info("mutate", "name", user)
 			if err != nil {
 				log.Error(err, "unable to get user")
