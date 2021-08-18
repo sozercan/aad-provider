@@ -79,9 +79,7 @@ func mutate(w http.ResponseWriter, req *http.Request) {
 
 	for i := range input {
 		if i.ProviderName == providerName && strings.Contains(i.OutboundData, "@") {
-			log.Info("mutate", "OutboundData", i.OutboundData)
 			user, err := graphClient.GetUser(i.OutboundData, opts)
-			log.Info("mutate", "name", user)
 			if err != nil {
 				log.Error(err, "unable to get user")
 				input[i] = i.OutboundData

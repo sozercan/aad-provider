@@ -13,7 +13,7 @@ spec:
         run: aad-provider
     spec:
       containers:
-        - image: sozercan/aad-provider:latest
+        - image: sozercan/aad-provider:v0.0.1
           imagePullPolicy: Always
           name: aad-provider
           ports:
