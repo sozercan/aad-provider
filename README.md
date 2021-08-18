@@ -8,7 +8,7 @@ Azure Active Directory (AAD) provider is used for mutating Kubernetes labels to 
 
 - Create a new service principal and assign necessary Microsoft Graph API permissions to read user profile (`profile` and `User.Read.All`).
 
-- Add your tenant ID, client ID, client secret to the `manifest/secrets.yaml` file.
+- Add your tenant ID, client ID, client secret to the `manifest/secret.yaml` file.
 
 - Deploy Gatekeeper with external data enabled (`--enable-external-data`).
 
