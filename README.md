@@ -1,10 +1,16 @@
 # Azure Active Directory (AAD) provider
 
-- Create a new service principal and assign necesssary Graph API permissions to read user profile.
+Azure Active Directory (AAD) provider is used for mutating Kubernetes labels to display name of the AAD user using Microsoft Graph API.
 
-- Add tenant ID, client ID, client secret to the `manifest/secrets.yaml` file.
+> This repo is meant for testing Gatekeeper external data feature. Do not use for production.
 
-- Deploy Gatekeeper with external data enabled (`--enable-external-data`)
+- Make sure you have a Kubernetes user that matches the AAD user you want to query (e.g. `user@example.com`).
+
+- Create a new service principal and assign necessary Microsoft Graph API permissions to read user profile (`profile` and `User.Read.All`).
+
+- Add your tenant ID, client ID, client secret to the `manifest/secrets.yaml` file.
+
+- Deploy Gatekeeper with external data enabled (`--enable-external-data`).
 
 # Installation
 
@@ -15,8 +21,19 @@
 
 - `kubectl apply -f policy/assignmetadata.yaml`
 
-# Verification
+# Mutation
 
 - `kubectl apply -f examples/test.yaml`
 
 - `kubectl get deploy test-deployment -o yaml`
+  - You should see `owners` label filled with your AAD display name.
+    ```
+    $ kubectl get cm test-configmap -o yaml
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      labels:
+        owner: Sertac_Ozercan
+      name: test-configmap
+      namespace: default
+    ```

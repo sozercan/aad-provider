@@ -78,7 +78,7 @@ func mutate(w http.ResponseWriter, req *http.Request) {
 	opts := msgraph.GetWithContext(ctx)
 
 	for i := range input {
-		if i.ProviderName == providerName {
+		if i.ProviderName == providerName && strings.Contains(i.OutboundData, "@") {
 			log.Info("mutate", "OutboundData", i.OutboundData)
 			user, err := graphClient.GetUser(i.OutboundData, opts)
 			log.Info("mutate", "name", user)
